@@ -1,0 +1,8 @@
+[package]
+name = "brainfuck_recompiler"
+version = "0.1.0"
+authors = ["Luca Marcelli <ionix@protonmail.com>"]
+
+[dependencies]
+sam = "0.3.1"
+machina = "0.6.1"
