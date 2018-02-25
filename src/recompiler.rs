@@ -62,7 +62,7 @@ impl Recompiler {
                     let mut length = self.bytes.len();
                     let mut size = length - index;
                     if size > 129 {
-                        let bytes = self.calc_pos_jmp(size);
+                        let bytes = self.calc_pos_jmp(size + 1);
                         self.bytes[index] = bytes[3];
                         self.bytes[index - 1] = bytes[2];
                         self.bytes[index - 2] = bytes[1];
@@ -70,9 +70,8 @@ impl Recompiler {
                         self.bytes[index - 4] = 0x84;
                         self.bytes[index - 5] = 0x0f;
                     } else {
-                        // sometimes wrong cause of 4 bytes????
                         self.bytes[index - 5] = 0x74;
-                        self.bytes[index - 4] = (size + 8) as u8; // + 8 bytes for after [
+                        self.bytes[index - 4] = (size + 12) as u8; // + 12 bytes for after [
                         /*self.bytes.remove(index - 3);
                         self.bytes.remove(index - 2);
                         self.bytes.remove(index - 1);
@@ -90,10 +89,9 @@ impl Recompiler {
                         /*
                             0f 85 xx xx xx xx
                         */
-                        // + 7 does not work always?
                         self.bytes.extend(long);
                         length = self.bytes.len();
-                        size = length - index - 3; // - 3 bytes for after ] (-7 to skip NOP)
+                        size = length - index - 3; // - 3 bytes for after ]
                         let bytes = self.calc_neg_jmp(size);
                         self.bytes[length - 4] = bytes[0];
                         self.bytes[length - 3] = bytes[1];
@@ -108,7 +106,7 @@ impl Recompiler {
                         self.bytes.extend(sam!(x64 => "nop"));
                         self.bytes.extend(sam!(x64 => "nop"));
                         self.bytes.extend(sam!(x64 => "nop"));
-                        // self.bytes.extend(sam!(x64 => "nop"));
+                        self.bytes.extend(sam!(x64 => "nop"));
                     }
                 },
                 _ => (),
@@ -187,7 +185,7 @@ impl Recompiler {
     }
 
     fn calc_pos_jmp(&self, size: usize) -> [u8; 4] {
-        let mut asm: [isize; 4] = [-0x06, 0xff, 0xff, 0xff];
+        let mut asm: [isize; 4] = [-0x06, 0x00, 0x00, 0x00];
 
         for _ in 0..size {
             if asm[0] == 0xff {
